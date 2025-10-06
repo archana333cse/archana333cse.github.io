@@ -15,7 +15,7 @@ export default function ProductDetails() {
     <div>
       <Header />
       <div className="container mx-auto px-6 py-10 grid grid-cols-1 md:grid-cols-2 gap-10">
-        <img src={image} alt={title} className="w-full h-96 object-cover rounded-lg shadow" />
+        <img src={image} alt={title} className="w-full h-96 object-contain object-center rounded-lg shadow" />
         <div>
           <h1 className="text-3xl font-bold mb-4">{title}</h1>
           <p className="text-2xl text-blue-600 mb-6">₹{price}</p>

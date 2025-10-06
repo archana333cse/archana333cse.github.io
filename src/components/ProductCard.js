@@ -73,9 +73,9 @@ export default function ProductCard({ id, title, price, image }) {
 
   return (
     <div
-  onClick={handleCardClick}
-  className="bg-white shadow rounded-lg p-4 w-full cursor-pointer relative hover:shadow-lg transition"
->
+      onClick={handleCardClick}
+      className="bg-white shadow rounded-lg p-4 w-full cursor-pointer relative hover:shadow-lg transition"
+    >
 
       {/* Wishlist Icon */}
       <button
@@ -89,7 +89,10 @@ export default function ProductCard({ id, title, price, image }) {
         />
       </button>
 
-      <img src={image} alt={title} className="w-full h-40 object-cover rounded" />
+      <div className="w-full h-40 flex items-center justify-center bg-gray-100 rounded mb-2">
+        <img src={image} alt={title} className="max-h-full max-w-full object-contain" />
+      </div>
+
       <h2 className="mt-2 font-semibold truncate">{title}</h2>
       <p className="text-gray-600">₹{price}</p>
 
