@@ -1,62 +1,62 @@
-import { useState, useEffect } from "react";
+// src/pages/Orders.js
+import { useEffect, useState } from "react";
 import Header from "../components/Header";
 
 export default function Orders() {
-  const [orders, setOrders] = useState([]);
-  const [user, setUser] = useState(null);
+    const [orders, setOrders] = useState([]);
 
- useEffect(() => {
-  const loggedUser = JSON.parse(localStorage.getItem("user"));
-  if (loggedUser) {
-    setUser(loggedUser);
-    const ordersKey = `orders_${loggedUser.email}`;  // ✅ must match Checkout.js
-    const storedOrders = JSON.parse(localStorage.getItem(ordersKey)) || [];
-    setOrders(storedOrders.reverse());
-  }
-}, []);
+    useEffect(() => {
+        fetch("http://localhost:5000/orders", {
+            method: "GET",
+            credentials: "include", // <-- IMPORTANT
+        })
+            .then((res) => res.json())
+            .then((data) => setOrders(data))
+            .catch((err) => console.error("Fetch orders failed", err));
+    }, []);
 
-  return (
-    <div>
-      <Header />
-      <div className="min-h-screen bg-gray-50 p-6 flex justify-center">
-        <div className="w-full max-w-4xl space-y-6">
-          <h1 className="text-2xl font-bold text-blue-600">Your Orders</h1>
-
-          {orders.length === 0 ? (
-            <p>No orders yet.</p>
-          ) : (
-            orders.map((order) => (
-              <div key={order.orderId} className="bg-white shadow rounded-lg p-4">
-                <h2 className="font-semibold">Order ID: {order.orderId}</h2>
-                <p>Date: {order.orderDate}</p>
-                <p>Payment: {order.paymentMethod}</p>
-                <p>Delivery Address: {order.address}</p>
-                {order.status && <p>Status: {order.status}</p>}
-
-                <div className="mt-2 grid grid-cols-2 sm:grid-cols-3 gap-4">
-                  {order.items.map((item) => (
-                    <div key={item.id} className="bg-gray-100 p-2 rounded">
-                      <img
-                        src={item.image}
-                        alt={item.title}
-                        className="w-full h-24 object-cover rounded"
-                      />
-                      <p className="text-sm font-semibold">{item.title}</p>
-                      <p>
-                        ₹{item.price} x {item.quantity}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-
-                <p className="mt-2 font-bold">
-                  Total: ₹{order.totalPrice + order.deliveryCharge + order.platformFee}
-                </p>
-              </div>
-            ))
-          )}
+    return (
+        <div>
+            <Header />
+            <div className="p-6">
+                <h1 className="text-2xl font-bold mb-4">My Orders</h1>
+                {orders.length === 0 ? (
+                    <p>No orders found.</p>
+                ) : (
+                    orders.map((order) => (
+                        <div key={order.id} className="border p-4 rounded mb-4">
+                            <div className="text-sm text-gray-500 mb-2">
+                                Order ID: {order.id} •{" "}
+                                {new Date(order.created_at).toLocaleString()}
+                            </div>
+                            <div className="text-sm text-gray-600 mb-2">
+                                <strong>Address:</strong> {order.address}
+                            </div>
+                            {order.items.map((item, idx) => (
+                                <div
+                                    key={idx}
+                                    className="flex items-center gap-4 mb-2"
+                                >
+                                    <img
+                                        src={item.image}
+                                        alt={item.title}
+                                        className="w-16 h-16 object-cover rounded"
+                                    />
+                                    <div>
+                                        <p className="font-semibold">{item.title}</p>
+                                        <p>
+                                            ₹{item.price} × {item.quantity}
+                                        </p>
+                                    </div>
+                                </div>
+                            ))}
+                            <div className="font-semibold mt-2">
+                                Total: ₹{order.total_price}
+                            </div>
+                        </div>
+                    ))
+                )}
+            </div>
         </div>
-      </div>
-    </div>
-  );
+    );
 }

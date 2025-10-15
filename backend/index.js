@@ -167,6 +167,46 @@ app.get('/search', (req, res) => {
 });
 
 
+// ================= PLACE ORDER =================
+app.post('/orders', authenticate, (req, res) => {
+  const { items, total_price, address, payment_method } = req.body;
+  const user_email = req.user.email;
+
+  if (!items || !total_price || !address || !payment_method) {
+    return res.status(400).json({ message: 'Missing order data' });
+  }
+
+  const sql = `INSERT INTO userorder (user_email, items, total_price, address, payment_method)
+               VALUES (?, ?, ?, ?, ?)`;
+
+  db.query(sql, [user_email, JSON.stringify(items), total_price, address, payment_method], (err, result) => {
+    if (err) {
+      console.error("Error placing order:", err);
+      return res.status(500).json({ message: 'Database error placing order' });
+    }
+
+    res.json({ message: 'Order placed successfully' });
+  });
+});
+
+
+// ================= GET USER ORDERS =================
+app.get("/orders", authenticate, (req, res) => {
+  const user_email = req.user.email;
+
+  db.query("SELECT * FROM userorder WHERE user_email = ?", [user_email], (err, results) => {
+    if (err) return res.status(500).json({ message: "Failed to fetch orders" });
+
+    const parsedOrders = results.map(order => ({
+      ...order,
+      items: JSON.parse(order.items),
+    }));
+
+    res.json(parsedOrders);
+  });
+});
+
+
 // ================= START SERVER =================
 const PORT = 5000;
 app.listen(PORT, () => {
