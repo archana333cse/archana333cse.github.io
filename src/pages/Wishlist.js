@@ -3,25 +3,27 @@ import Header from "../components/Header";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-export default function Wishlist() {
+export default function Wishlist({ user }) {
   const [wishlist, setWishlist] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("user"));
-    if (!user) {
-      alert("Please login to view your wishlist.");
-      navigate("/login");
-      return;
-    }
+  if (!user) {
+    alert("Please login to view your wishlist.");
+    navigate("/login");
+    return;
+  }
 
-    const wishlistKey = `wishlist_${user.email}`;
-    const storedWishlist = JSON.parse(localStorage.getItem(wishlistKey)) || [];
-    setWishlist(storedWishlist);
-  }, [navigate]);
+  const wishlistKey = `wishlist_${user.email}`;
+  const storedWishlist =
+    JSON.parse(localStorage.getItem(wishlistKey)) || [];
+  setWishlist(storedWishlist);
+}, [user, navigate]);
+
+
 
   const handleAddToCart = (item) => {
-    const user = JSON.parse(localStorage.getItem("user"));
+    //const user = JSON.parse(localStorage.getItem("user"));
     if (!user) {
       alert("Please login to add items to cart.");
       navigate("/login");
@@ -42,7 +44,7 @@ export default function Wishlist() {
   };
 
   const handleRemove = (id) => {
-    const user = JSON.parse(localStorage.getItem("user"));
+    //const user = JSON.parse(localStorage.getItem("user"));
     const wishlistKey = `wishlist_${user.email}`;
     let updatedWishlist = wishlist.filter((item) => item.id !== id);
     setWishlist(updatedWishlist);
@@ -51,7 +53,7 @@ export default function Wishlist() {
 
   return (
     <div>
-      <Header />
+     {/*  <Header /> */}
       <div className="p-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         {wishlist.length === 0 ? (
           <p className="text-gray-600 text-lg">No items in wishlist.</p>

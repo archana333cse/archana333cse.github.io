@@ -1,6 +1,6 @@
 import ProductCard from "./ProductCard";
 
-export default function CategorySection({ title, products }) {
+export default function CategorySection({ title, products,user }) {
   return (
     <section className="my-8">
       <h2 className="text-2xl font-bold mb-4">{title}</h2>
@@ -13,6 +13,7 @@ export default function CategorySection({ title, products }) {
             price={product.price}
             image={product.image}
             brand={product.brand} 
+            user={user}
           />
         ))}
       </div>

@@ -4,9 +4,9 @@ import Header from "../components/Header";
 import { Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
-export default function Cart() {
+export default function Cart({user}) {
     const [cart, setCart] = useState([]);
-    const [user, setUser] = useState(null);
+    //const [user, setUser] = useState(null);
 
       const navigate = useNavigate();
 
@@ -14,14 +14,13 @@ export default function Cart() {
     const PLATFORM_FEE = 10;
 
     useEffect(() => {
-        const loggedUser = JSON.parse(localStorage.getItem("user"));
-        if (loggedUser) {
-            setUser(loggedUser);
-            const cartKey = `cart_${loggedUser.email}`;
-            const storedCart = JSON.parse(localStorage.getItem(cartKey)) || [];
-            setCart(storedCart);
-        }
-    }, []);
+    if (user) {
+        const cartKey = `cart_${user.email}`;
+        const storedCart = JSON.parse(localStorage.getItem(cartKey)) || [];
+        setCart(storedCart);
+    }
+}, [user]);
+
 
     const updateCart = (newCart) => {
         if (user) {
@@ -54,7 +53,6 @@ export default function Cart() {
 
     return (
         <div>
-            <Header />
             <div className="min-h-screen bg-gray-50 p-6 flex justify-center">
                 <div className="bg-white shadow-lg rounded-xl p-6 w-full max-w-4xl">
                     <h1 className="text-2xl font-bold text-blue-600 mb-4">Your Cart 🛒</h1>

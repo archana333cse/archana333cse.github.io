@@ -6,14 +6,29 @@ export default function Payment() {
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
 
-  useEffect(() => {
-    const loggedUser = JSON.parse(localStorage.getItem("user"));
-    if (!loggedUser) {
-      alert("User not logged in");
-      return;
+ useEffect(() => {
+  const checkUser = async () => {
+    try {
+      const res = await fetch("http://localhost:5000/me", {
+        credentials: "include",
+      });
+
+      if (!res.ok) {
+        alert("User not logged in");
+        navigate("/login");
+        return;
+      }
+
+      const data = await res.json();
+      setUser(data.user);
+    } catch (err) {
+      console.error("Auth error:", err);
+      navigate("/login");
     }
-    setUser(loggedUser);
-  }, []);
+  };
+
+  checkUser();
+}, [navigate]);
 
   const handlePayment = async (method) => {
     if (!user) return;
@@ -35,10 +50,8 @@ export default function Payment() {
     try {
       const response = await fetch("http://localhost:5000/orders", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include", // Send cookies (for authentication)
+        headers: { "Content-Type": "application/json" },
+        credentials: "include", // ✅ required for cookies
         body: JSON.stringify({
           items: cartItems,
           total_price,
@@ -46,7 +59,6 @@ export default function Payment() {
           payment_method: method,
         }),
       });
-
       const data = await response.json();
 
       if (response.ok) {
@@ -65,7 +77,7 @@ export default function Payment() {
 
   return (
     <div>
-      <Header />
+
       <div className="min-h-screen flex justify-center items-start bg-gray-50 p-6">
         <div className="bg-white shadow-lg rounded-xl p-6 w-full max-w-md space-y-4">
           <h2 className="text-xl font-bold text-blue-600">Select Payment Method</h2>

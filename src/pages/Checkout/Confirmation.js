@@ -6,7 +6,7 @@ export default function Confirmation() {
 
   return (
     <div>
-      <Header />
+      {/* <Header /> */}
       <div className="min-h-screen flex justify-center items-start bg-gray-50 p-6">
         <div className="bg-white shadow-lg rounded-xl p-6 w-full max-w-md text-center">
           <h1 className="text-2xl font-bold text-blue-600 mb-4">🎉 Order Placed Successfully!</h1>

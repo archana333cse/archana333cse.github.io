@@ -6,7 +6,7 @@ import Footer from "../components/Footer";
 import CategorySection from "../components/CategorySection";
 import axios from "axios";
 
-export default function Home() {
+export default function Home({ user }) {
      const [products, setProducts] = useState([]);
 
   useEffect(() => {
@@ -26,8 +26,8 @@ const newArrivals = products.filter(p => p.category === 'New Arrivals');
 
   return (
     <div>
-      <Header />
-
+      {/* <Header />
+ */}
       {/* Hero Section */}
       <section className="relative bg-gradient-to-r from-blue-50 to-blue-100 text-center py-20">
         <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4">
@@ -45,9 +45,9 @@ const newArrivals = products.filter(p => p.category === 'New Arrivals');
       <BannerCarousel />
 
       {/* Categories / Product Sections */}
-      <CategorySection title="Top Deals" products={topDeals} />
-      <CategorySection title="Best Sellers" products={bestSellers} />
-      <CategorySection title="New Arrivals" products={newArrivals} />
+      <CategorySection title="Top Deals" products={topDeals} user={user}/>
+      <CategorySection title="Best Sellers" products={bestSellers} user={user}/>
+      <CategorySection title="New Arrivals" products={newArrivals} user={user}/>
       
 
       <Footer />

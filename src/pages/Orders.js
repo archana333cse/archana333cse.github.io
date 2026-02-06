@@ -17,7 +17,7 @@ export default function Orders() {
 
     return (
         <div>
-            <Header />
+           {/*  <Header /> */}
             <div className="p-6">
                 <h1 className="text-2xl font-bold mb-4">My Orders</h1>
                 {orders.length === 0 ? (

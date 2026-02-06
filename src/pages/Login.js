@@ -10,42 +10,38 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
+  e.preventDefault();
+  setLoading(true);
 
-    try {
-      const res = await fetch("http://localhost:5000/login", {
-  method: "POST",
-  headers: { "Content-Type": "application/json" },
-  body: JSON.stringify({ email, password }),
-  credentials: "include" // important to send/receive cookies
-});
+  try {
+    const res = await fetch("http://localhost:5000/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+      credentials: "include", // important for sending/receiving cookies
+    });
 
-      const data = await res.json();
+    const data = await res.json();
 
-      if (res.ok) {
-        alert("Login successful ✅");
-        console.log("User:", data.user);
-
-        // store user info in localStorage
-        localStorage.setItem("user", JSON.stringify(data.user));
-
-        // redirect to home page
-       navigate("/"); 
-      } else {
-        alert(data.message || "Login failed");
-      }
-    } catch (err) {
-      console.error("Login error:", err);
-      alert("Something went wrong. Please try again.");
-    } finally {
-      setLoading(false);
+    if (res.ok) {
+      alert("Login successful ✅");
+      console.log("User:", data.user);
+      navigate("/"); // no need to save user manually
+    } else {
+      alert(data.message || "Login failed");
     }
-  };
+  } catch (err) {
+    console.error("Login error:", err);
+    alert("Something went wrong. Please try again.");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <>
-      <Header />
+    {/*   <Header /> */}
       <div className="flex items-center justify-center min-h-screen bg-gray-50">
         <div className="bg-white shadow-lg rounded-xl p-8 w-full max-w-md">
           <h2 className="text-2xl font-bold text-center text-blue-600 mb-6">

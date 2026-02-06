@@ -7,19 +7,6 @@ const cookieParser = require("cookie-parser");
 const jwt = require("jsonwebtoken");
 
 
-// Middleware to protect routes
-const authenticate = (req, res, next) => {
-  const token = req.cookies.access_token;
-  if (!token) return res.status(401).json({ message: "Unauthorized" });
-
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET);
-    req.user = decoded; // attach user info to request
-    next();
-  } catch (err) {
-    return res.status(401).json({ message: "Invalid token" });
-  }
-};
 
 const app = express();
 app.use(cookieParser());
@@ -102,27 +89,23 @@ app.post('/signup', async (req, res) => {
 });
 
 // ================= LOGIN =================
-app.post('/login', (req, res) => {
+app.post("/login", (req, res) => {
   const { email, password } = req.body;
 
-  if (!email || !password) {
-    return res.status(400).json({ message: 'Please enter both email and password' });
-  }
+  if (!email || !password)
+    return res.status(400).json({ message: "Please enter both email and password" });
 
-  db.query('SELECT * FROM users WHERE email = ?', [email], async (err, results) => {
-    if (err) return res.status(500).json({ message: 'Database error' });
+  db.query("SELECT * FROM users WHERE email = ?", [email], async (err, results) => {
+    if (err) return res.status(500).json({ message: "Database error" });
 
-    if (results.length === 0) {
-      return res.status(401).json({ message: 'Invalid email or password' });
-    }
+    if (results.length === 0)
+      return res.status(401).json({ message: "Invalid email or password" });
 
     const user = results[0];
-
-    // compare passwords
     const isMatch = await bcrypt.compare(password, user.password_hash);
-    if (!isMatch) {
-      return res.status(401).json({ message: 'Invalid email or password' });
-    }
+
+    if (!isMatch)
+      return res.status(401).json({ message: "Invalid email or password" });
 
     // Generate JWT token
     const token = jwt.sign(
@@ -131,24 +114,62 @@ app.post('/login', (req, res) => {
       { expiresIn: JWT_EXPIRES_IN }
     );
 
-    // Set token as HTTP-only cookie
+    // Set HTTP-only cookie
     res.cookie("access_token", token, {
       httpOnly: true,
-      secure: false, // set to true if using HTTPS
-      sameSite: "Lax",
+      //secure: process.env.NODE_ENV === "production", // true in production
+      secure:true,
+      sameSite:"Lax", // "Lax" for dev, "None" for cross-site
       maxAge: 3600000 // 1 hour
     });
 
     return res.json({
-      message: 'Login successful',
-      user: {
-        id: user.id,
-        fullName: user.full_name,
-        email: user.email
-      }
+      message: "Login successful",
+      user: { id: user.id, fullName: user.full_name, email: user.email }
     });
   });
 });
+
+
+
+// ================= CHECK SESSION =================
+app.get("/me", (req, res) => {
+  const token = req.cookies.access_token;
+  if (!token) return res.status(401).json({ message: "Not authenticated" });
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    res.json({ user: decoded });
+  } catch {
+    res.status(401).json({ message: "Invalid or expired token" });
+  }
+});
+
+// ================= LOGOUT =================
+app.post("/logout", (req, res) => {
+  res.clearCookie("access_token", {
+    httpOnly: true,
+    //secure: process.env.NODE_ENV === "production",
+    secure: false,
+    sameSite: "Lax"
+  });
+  res.json({ message: "Logged out successfully" });
+});
+
+
+// ✅ AUTHENTICATE MIDDLEWARE
+function authenticate(req, res, next) {
+  const token = req.cookies.access_token;
+  if (!token) return res.status(401).json({ message: "Unauthorized" });
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.user = decoded;
+    next();
+  } catch (err) {
+    return res.status(401).json({ message: "Invalid token" });
+  }
+}
 
 // Search products by title, brand, or description
 app.get('/search', (req, res) => {
@@ -168,24 +189,24 @@ app.get('/search', (req, res) => {
 
 
 // ================= PLACE ORDER =================
-app.post('/orders', authenticate, (req, res) => {
+app.post("/orders", authenticate, (req, res) => {
   const { items, total_price, address, payment_method } = req.body;
   const user_email = req.user.email;
 
   if (!items || !total_price || !address || !payment_method) {
-    return res.status(400).json({ message: 'Missing order data' });
+    return res.status(400).json({ message: "Missing order data" });
   }
 
   const sql = `INSERT INTO userorder (user_email, items, total_price, address, payment_method)
                VALUES (?, ?, ?, ?, ?)`;
 
-  db.query(sql, [user_email, JSON.stringify(items), total_price, address, payment_method], (err, result) => {
+  db.query(sql, [user_email, JSON.stringify(items), total_price, address, payment_method], (err) => {
     if (err) {
       console.error("Error placing order:", err);
-      return res.status(500).json({ message: 'Database error placing order' });
+      return res.status(500).json({ message: "Database error placing order" });
     }
 
-    res.json({ message: 'Order placed successfully' });
+    res.json({ message: "Order placed successfully" });
   });
 });
 

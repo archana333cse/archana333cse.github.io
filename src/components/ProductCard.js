@@ -3,13 +3,13 @@ import { Heart } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-export default function ProductCard({ id, title, price, image }) {
+export default function ProductCard({ id, title, price, image, user  }) {
   const [wishlisted, setWishlisted] = useState(false);
   const navigate = useNavigate();
 
   // Check if product is already in wishlist
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("user"));
+    //const user = JSON.parse(localStorage.getItem("user"));
     if (user) {
       const wishlistKey = `wishlist_${user.email}`;
       const wishlist = JSON.parse(localStorage.getItem(wishlistKey)) || [];
@@ -20,7 +20,7 @@ export default function ProductCard({ id, title, price, image }) {
   // ✅ Wishlist toggle
   const toggleWishlist = (e) => {
     e.stopPropagation();
-    const user = JSON.parse(localStorage.getItem("user"));
+    //const user = JSON.parse(localStorage.getItem("user"));
 
     if (!user) {
       alert("Please login to use wishlist.");
@@ -46,7 +46,7 @@ export default function ProductCard({ id, title, price, image }) {
   // ✅ Add to Cart
   const handleAddToCart = (e) => {
     e.stopPropagation();
-    const user = JSON.parse(localStorage.getItem("user"));
+    //const user = JSON.parse(localStorage.getItem("user"));
 
     if (!user) {
       alert("Please login to add items to cart.");

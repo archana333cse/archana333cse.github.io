@@ -4,10 +4,9 @@ import { ShoppingCart, Heart, User, Search, LogOut } from "lucide-react";
 import { useState, useEffect } from "react";
 import axios from "axios";
 
-export default function Header() {
-  const [showMenu, setShowMenu] = useState(false);
-  const [user, setUser] = useState(null);
-   const [searchTerm, setSearchTerm] = useState("");
+export default function Header({ user, setUser }) {
+   const [showMenu, setShowMenu] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
   
    const handleSearch = async () => {
@@ -15,18 +14,21 @@ export default function Header() {
     navigate(`/search?query=${encodeURIComponent(searchTerm)}`);
   };
 
-  // Get logged-in user from localStorage
-  useEffect(() => {
-    const storedUser = JSON.parse(localStorage.getItem("user"));
-    if (storedUser) setUser(storedUser);
-  }, []);
-
-  const handleLogout = () => {
-    localStorage.removeItem("user");
+  
+  const handleLogout = async () => {
+  try {
+    await axios.post(
+      "http://localhost:5000/logout",
+      {},
+      { withCredentials: true }
+    );
     setUser(null);
-    setShowMenu(false);
-    navigate("/"); // redirect to home
-  };
+    navigate("/");
+  } catch (error) {
+    console.error("Logout failed:", error);
+  }
+};
+
 
   return (
     <header className="bg-white shadow-md sticky top-0 z-50">
@@ -83,7 +85,7 @@ export default function Header() {
               >
                 <User size={22} />
                 <span className="hidden md:inline">
-                  {user ? `Hi, ${user.fullName.split(" ")[0]}` : "Login"}
+                  {user ? `Hi, ${user.fullName?.split(" ")[0]}` : "Login"}
                 </span>
               </button>
 

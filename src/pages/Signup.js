@@ -40,7 +40,7 @@ export default function Signup() {
 
   return (
     <>
-      <Header />
+      {/* <Header /> */}
       <div className="flex items-center justify-center min-h-screen bg-gray-50">
         <div className="bg-white shadow-lg rounded-xl p-8 w-full max-w-md">
           <h2 className="text-2xl font-bold text-center text-blue-600 mb-6">
