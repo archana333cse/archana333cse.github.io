@@ -8,7 +8,7 @@ export default function Wishlist({ user }) {
   const navigate = useNavigate();
 
   useEffect(() => {
-  if (!user) {
+  if (!user || user.isGuest) {
     alert("Please login to view your wishlist.");
     navigate("/login");
     return;

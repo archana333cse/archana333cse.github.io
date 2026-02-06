@@ -48,7 +48,7 @@ function App() {
           <Route path="/" element={<Home user={user} />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
-          <Route path="/guest" element={<GuestLogin />} />
+         <Route path="/guest" element={<GuestLogin setUser={setUser} />} />
           <Route path="/product/:id" element={<ProductDetails />} />
           <Route path="/cart" element={<Cart user={user} />} />
           <Route path="/wishlist" element={<Wishlist user={user} />} />
@@ -56,7 +56,7 @@ function App() {
           <Route path="/checkout/payment" element={<Payment user={user} />} />
           <Route path="/checkout/confirmation" element={<Confirmation user={user}/>} />
           <Route path="/checkout" element={<Checkout />} />
-          <Route path="/orders" element={<Orders />} />
+          <Route path="/orders" element={<Orders user={user} />} />
           <Route path="/search" element={<SearchResults />} />
           <Route path="/checkout/success" element={<CheckoutSuccess />} />
         </Routes>

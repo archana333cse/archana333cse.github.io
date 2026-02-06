@@ -42,6 +42,8 @@ export default function Payment() {
       return;
     }
 
+    localStorage.setItem("checkout_payment", method);
+
     const fullAddress = `${address.name}, ${address.phone}, ${address.addressLine}, ${address.city}, ${address.state} - ${address.pincode}`;
     const total_price =
       cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0) +
