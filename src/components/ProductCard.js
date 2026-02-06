@@ -3,7 +3,7 @@ import { Heart } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-export default function ProductCard({ id, title, price, image, user  }) {
+export default function ProductCard({ id, title, price, image, user }) {
   const [wishlisted, setWishlisted] = useState(false);
   const navigate = useNavigate();
 
@@ -42,6 +42,34 @@ export default function ProductCard({ id, title, price, image, user  }) {
 
     localStorage.setItem(wishlistKey, JSON.stringify(wishlist));
   };
+
+  const handleBuyNow = (e) => {
+  e.stopPropagation();
+
+  if (!user) {
+    alert("Please login to continue.");
+    navigate("/login");
+    return;
+  }
+
+  const cartKey = `cart_${user.email}`;
+  let cart = JSON.parse(localStorage.getItem(cartKey)) || [];
+
+  // If item already exists, increase quantity
+  const existingItem = cart.find((item) => item.id === id);
+
+  if (existingItem) {
+    existingItem.quantity += 1;
+  } else {
+    cart.push({ id, title, price, image, quantity: 1 });
+  }
+
+  localStorage.setItem(cartKey, JSON.stringify(cart));
+
+  // ✅ Redirect to cart page
+  navigate("/cart");
+};
+
 
   // ✅ Add to Cart
   const handleAddToCart = (e) => {
@@ -99,10 +127,7 @@ export default function ProductCard({ id, title, price, image, user  }) {
       {/* Buttons */}
       <div className="flex gap-2 mt-2">
         <button
-          onClick={(e) => {
-            e.stopPropagation();
-            alert("Buy Now clicked! (Integrate checkout later)");
-          }}
+          onClick={handleBuyNow}
           className="flex-1 bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
         >
           Buy Now
