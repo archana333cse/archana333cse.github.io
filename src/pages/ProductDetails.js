@@ -13,7 +13,7 @@ export default function ProductDetails() {
 
   return (
     <div>
-      <Header />
+     {/*  <Header /> */}
       <div className="container mx-auto px-6 py-10 grid grid-cols-1 md:grid-cols-2 gap-10">
         <img src={image} alt={title} className="w-full h-96 object-contain object-center rounded-lg shadow" />
         <div>
