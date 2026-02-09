@@ -189,26 +189,34 @@ app.get('/search', (req, res) => {
 
 
 // ================= PLACE ORDER =================
-app.post("/orders", authenticate, (req, res) => {
-  const { items, total_price, address, payment_method } = req.body;
-  const user_email = req.user.email;
+app.post("/orders", (req, res) => {
+  const { items, total_price, address, payment_method, email } = req.body;
 
-  if (!items || !total_price || !address || !payment_method) {
+  // Determine if user is logged in
+  const user_email = req.user ? req.user.email : email;
+
+  if (!items || !total_price || !address || !payment_method || !user_email) {
     return res.status(400).json({ message: "Missing order data" });
   }
 
-  const sql = `INSERT INTO userorder (user_email, items, total_price, address, payment_method)
+  const sql = `INSERT INTO userorder 
+               (user_email, items, total_price, address, payment_method)
                VALUES (?, ?, ?, ?, ?)`;
 
-  db.query(sql, [user_email, JSON.stringify(items), total_price, address, payment_method], (err) => {
-    if (err) {
-      console.error("Error placing order:", err);
-      return res.status(500).json({ message: "Database error placing order" });
-    }
+  db.query(
+    sql,
+    [user_email, JSON.stringify(items), total_price, address, payment_method],
+    (err) => {
+      if (err) {
+        console.error("Error placing order:", err);
+        return res.status(500).json({ message: "Database error placing order" });
+      }
 
-    res.json({ message: "Order placed successfully" });
-  });
+      res.json({ message: "Order placed successfully" });
+    }
+  );
 });
+
 
 
 // ================= GET USER ORDERS =================

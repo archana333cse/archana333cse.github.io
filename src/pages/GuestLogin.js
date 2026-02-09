@@ -5,13 +5,20 @@ export default function GuestLogin({ setUser }) {
   const navigate = useNavigate();
 
   const handleGuestLogin = () => {
+    // Create unique guest email (important)
+    const guestEmail = `guest_${Date.now()}@example.com`;
+
     const guestUser = {
-      email: "guest_user",
+      email: guestEmail,
       name: "Guest",
       isGuest: true,
     };
 
+    // Store in localStorage
     localStorage.setItem("user", JSON.stringify(guestUser));
+    localStorage.setItem("guest_email", guestEmail); // ✅ important for Payment page
+
+    // Update global state
     setUser(guestUser);
 
     navigate("/");
@@ -25,7 +32,7 @@ export default function GuestLogin({ setUser }) {
         </h2>
 
         <p className="text-gray-600 mb-6">
-          You can browse and shop without an account.
+          You can browse and shop without creating an account.
         </p>
 
         <button
