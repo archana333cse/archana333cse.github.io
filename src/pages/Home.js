@@ -5,6 +5,7 @@ import BannerCarousel from "../components/BannerCarousel";
 import Footer from "../components/Footer";
 import CategorySection from "../components/CategorySection";
 import axios from "axios";
+import MainCategorySection from "../components/MainCategorySection";
 
 export default function Home({ user }) {
      const [products, setProducts] = useState([]);
@@ -43,6 +44,8 @@ const newArrivals = products.filter(p => p.category === 'New Arrivals');
 
       {/* Banner Carousel */}
       <BannerCarousel />
+    {/*   main category section */}
+      <MainCategorySection />
 
       {/* Categories / Product Sections */}
       <CategorySection title="Top Deals" products={topDeals} user={user}/>
