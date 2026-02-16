@@ -38,6 +38,46 @@ db.connect(err => {
   console.log('Connected to MySQL');
 });
 
+app.get("/categories", (req, res) => {
+  const { mainCategory, subCategory } = req.query;
+
+  if (!mainCategory) {
+    return res.json({ subCategories: [] });
+  }
+
+  // If only mainCategory → return subCategories
+  if (mainCategory && !subCategory) {
+    db.query(
+      "SELECT DISTINCT subCategory FROM products WHERE mainCategory = ?",
+      [mainCategory],
+      (err, rows) => {
+        if (err) return res.status(500).json(err);
+
+        return res.json({
+          subCategories: rows.map(r => r.subCategory)
+        });
+      }
+    );
+  }
+
+  // If mainCategory + subCategory → return childCategories
+  if (mainCategory && subCategory) {
+    db.query(
+      "SELECT DISTINCT childCategory FROM products WHERE mainCategory = ? AND subCategory = ?",
+      [mainCategory, subCategory],
+      (err, rows) => {
+        if (err) return res.status(500).json(err);
+
+        return res.json({
+          childCategories: rows.map(r => r.childCategory)
+        });
+      }
+    );
+  }
+});
+
+
+
 // Fetch all products
 app.get("/products", (req, res) => {
   const {

@@ -71,10 +71,11 @@ function App() {
           <Route path="/orders" element={<Orders user={user} />} />
           <Route path="/search" element={<SearchResults />} />
           <Route path="/checkout/success" element={<CheckoutSuccess />} />
-          <Route path="/:mainCategory/:subCategory/:childCategory" element={<ProductListingPage user={user} />} />
+          <Route path="/:mainCategory" element={<ProductListingPage user={user} />} />
           <Route path="/:mainCategory/:subCategory" element={<ProductListingPage user={user} />} />
-          <Route path="/:mainCategory" element={<ProductListingPage />} />
-          <Route path="/profile" element={<Profile user={user} />}/>
+          <Route path="/:mainCategory/:subCategory/:childCategory" element={<ProductListingPage user={user} />} />
+
+          <Route path="/profile" element={<Profile user={user} />} />
 
         </Routes>
       </div>
