@@ -19,12 +19,17 @@ import CheckoutSuccess from "./pages/CheckoutSuccess";
 import Header from "./components/Header";
 import CategoryPage from "./pages/CategoryPage";
 import ProductListingPage from "./pages/ProductListingPage";
+import Profile from "./pages/Profile";
 
 
 
 function App() {
   // ✅ Define state
-  const [user, setUser] = useState(undefined);
+  const [user, setUser] = useState(() => {
+    const storedUser = localStorage.getItem("user");
+    return storedUser ? JSON.parse(storedUser) : null;
+  });
+
 
   // ✅ Hook must be inside the component
   useEffect(() => {
@@ -53,7 +58,7 @@ function App() {
             element={<CategoryPage user={user} />}
           />
           <Route path="/" element={<Home user={user} />} />
-          <Route path="/login" element={<Login />} />
+          <Route path="/login" element={<Login setUser={setUser} />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/guest" element={<GuestLogin setUser={setUser} />} />
           <Route path="/product/:id" element={<ProductDetails />} />
@@ -69,6 +74,8 @@ function App() {
           <Route path="/:mainCategory/:subCategory/:childCategory" element={<ProductListingPage user={user} />} />
           <Route path="/:mainCategory/:subCategory" element={<ProductListingPage user={user} />} />
           <Route path="/:mainCategory" element={<ProductListingPage />} />
+          <Route path="/profile" element={<Profile user={user} />}/>
+
         </Routes>
       </div>
     </Router>

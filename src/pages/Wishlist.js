@@ -6,17 +6,24 @@ export default function Wishlist({ user }) {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!user || user.isGuest) {
-      alert("Please login to view your wishlist.");
-      navigate("/login");
-      return;
-    }
+  // Wait until user state is available
+  if (user === undefined) return;
 
-    const wishlistKey = `wishlist_${user.email}`;
-    const storedWishlist =
-      JSON.parse(localStorage.getItem(wishlistKey)) || [];
-    setWishlist(storedWishlist);
-  }, [user, navigate]);
+  // If no user OR guest user → redirect
+  if (!user || user.isGuest) {
+    alert("Please login to view your wishlist.");
+    navigate("/login");
+    return;
+  }
+
+  const wishlistKey = `wishlist_${user.email}`;
+  const storedWishlist =
+    JSON.parse(localStorage.getItem(wishlistKey)) || [];
+
+  setWishlist(storedWishlist);
+
+}, [user, navigate]);
+
 
   const handleAddToCart = (item) => {
     if (!user) {

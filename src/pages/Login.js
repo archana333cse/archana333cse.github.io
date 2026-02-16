@@ -3,7 +3,8 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Header from "../components/Header";
 
-export default function Login() {
+export default function Login({ setUser }) {
+
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -23,11 +24,18 @@ export default function Login() {
 
     const data = await res.json();
 
-    if (res.ok) {
-      alert("Login successful ✅");
-      console.log("User:", data.user);
-      navigate("/"); // no need to save user manually
-    } else {
+   if (res.ok) {
+  alert("Login successful ✅");
+
+  // Save user in localStorage
+  localStorage.setItem("user", JSON.stringify(data.user));
+
+  // Update global state
+  setUser(data.user);
+
+  navigate("/");
+}
+ else {
       alert(data.message || "Login failed");
     }
   } catch (err) {
