@@ -16,15 +16,15 @@ export default function Home({ user }) {
     const fetchData = async () => {
       try {
         const topDealsRes = await axios.get(
-          "http://localhost:5000/products?category=Top Deals&limit=8"
+          "http://localhost:5000/products?category=Top Deals&limit=100"
         );
 
         const bestSellersRes = await axios.get(
-          "http://localhost:5000/products?category=Best Sellers&limit=8"
+          "http://localhost:5000/products?category=Best Sellers&limit=100"
         );
 
         const newArrivalsRes = await axios.get(
-          "http://localhost:5000/products?category=New Arrivals&limit=8"
+          "http://localhost:5000/products?category=New Arrivals&limit=100"
         );
 
         setTopDeals(topDealsRes.data);
