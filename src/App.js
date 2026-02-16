@@ -18,6 +18,8 @@ import SearchResults from "./pages/SearchResults";
 import CheckoutSuccess from "./pages/CheckoutSuccess";
 import Header from "./components/Header";
 import CategoryPage from "./pages/CategoryPage";
+import ProductListingPage from "./pages/ProductListingPage";
+
 
 
 function App() {
@@ -64,6 +66,9 @@ function App() {
           <Route path="/orders" element={<Orders user={user} />} />
           <Route path="/search" element={<SearchResults />} />
           <Route path="/checkout/success" element={<CheckoutSuccess />} />
+          <Route path="/:mainCategory/:subCategory/:childCategory" element={<ProductListingPage user={user} />} />
+          <Route path="/:mainCategory/:subCategory" element={<ProductListingPage user={user} />} />
+          <Route path="/:mainCategory" element={<ProductListingPage />} />
         </Routes>
       </div>
     </Router>

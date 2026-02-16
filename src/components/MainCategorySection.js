@@ -18,7 +18,7 @@ export default function MainCategorySection() {
         {categories.map((cat) => (
           <button
             key={cat}
-            onClick={() => navigate(`/category/${cat}`)}
+            onClick={() => navigate(`/${cat}`)}   // ✅ FIXED
             className="px-6 py-2 bg-gray-100 rounded-full hover:bg-blue-600 hover:text-white transition font-medium"
           >
             {cat}

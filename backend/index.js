@@ -39,14 +39,61 @@ db.connect(err => {
 });
 
 // Fetch all products
-app.get('/products', (req, res) => {
-  db.query('SELECT * FROM products', (err, results) => {
-    if (err) return res.status(500).json({ error: err.message });
-    res.json(results);
+app.get("/products", (req, res) => {
+  const {
+    mainCategory,
+    subCategory,
+    childCategory,
+    sort,
+    page = 1,
+    limit = 8,
+    search
+  } = req.query;
+
+  let query = "SELECT * FROM products WHERE 1=1";
+  let values = [];
+
+  if (mainCategory) {
+    query += " AND mainCategory = ?";
+    values.push(mainCategory);
+  }
+  if (req.query.category) {
+  query += " AND category = ?";
+  values.push(req.query.category);
+}
+
+  if (subCategory) {
+    query += " AND subCategory = ?";
+    values.push(subCategory);
+  }
+
+  if (childCategory) {
+    query += " AND childCategory = ?";
+    values.push(childCategory);
+  }
+
+  if (search) {
+    query += " AND title LIKE ?";
+    values.push(`%${search}%`);
+  }
+
+  if (sort === "low") {
+    query += " ORDER BY price ASC";
+  } else if (sort === "high") {
+    query += " ORDER BY price DESC";
+  }
+
+  const offset = (page - 1) * limit;
+  query += " LIMIT ? OFFSET ?";
+  values.push(Number(limit), Number(offset));
+
+  db.query(query, values, (err, result) => {
+    if (err) return res.status(500).json(err);
+    res.json(result);
   });
 });
 
-// Optional: Fetch products by category (if you add category field later)
+// Optional: Fetch products by category
 app.get('/products/category/:category', (req, res) => {
   const { category } = req.params;
   db.query('SELECT * FROM products WHERE category = ?', [category], (err, results) => {

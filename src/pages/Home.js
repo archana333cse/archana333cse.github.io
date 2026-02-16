@@ -1,6 +1,5 @@
 // src/pages/Home.js
 import { useEffect, useState } from "react";
-import Header from "../components/Header";
 import BannerCarousel from "../components/BannerCarousel";
 import Footer from "../components/Footer";
 import CategorySection from "../components/CategorySection";
@@ -8,27 +7,41 @@ import axios from "axios";
 import MainCategorySection from "../components/MainCategorySection";
 
 export default function Home({ user }) {
-     const [products, setProducts] = useState([]);
+
+  const [topDeals, setTopDeals] = useState([]);
+  const [bestSellers, setBestSellers] = useState([]);
+  const [newArrivals, setNewArrivals] = useState([]);
 
   useEffect(() => {
-    const fetchProducts = async () => {
+    const fetchData = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/products");
-        setProducts(res.data);
+        const topDealsRes = await axios.get(
+          "http://localhost:5000/products?category=Top Deals&limit=8"
+        );
+
+        const bestSellersRes = await axios.get(
+          "http://localhost:5000/products?category=Best Sellers&limit=8"
+        );
+
+        const newArrivalsRes = await axios.get(
+          "http://localhost:5000/products?category=New Arrivals&limit=8"
+        );
+
+        setTopDeals(topDealsRes.data);
+        setBestSellers(bestSellersRes.data);
+        setNewArrivals(newArrivalsRes.data);
+
       } catch (err) {
         console.error(err);
       }
     };
-    fetchProducts();
+
+    fetchData();
   }, []);
- const topDeals = products.filter(p => p.category === 'Top Deals');
-const bestSellers = products.filter(p => p.category === 'Best Sellers');
-const newArrivals = products.filter(p => p.category === 'New Arrivals');
 
   return (
     <div>
-      {/* <Header />
- */}
+
       {/* Hero Section */}
       <section className="relative bg-gradient-to-r from-blue-50 to-blue-100 text-center py-20">
         <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4">
@@ -42,16 +55,13 @@ const newArrivals = products.filter(p => p.category === 'New Arrivals');
         </button>
       </section>
 
-      {/* Banner Carousel */}
       <BannerCarousel />
-    {/*   main category section */}
+
       <MainCategorySection />
 
-      {/* Categories / Product Sections */}
-      <CategorySection title="Top Deals" products={topDeals} user={user}/>
-      <CategorySection title="Best Sellers" products={bestSellers} user={user}/>
-      <CategorySection title="New Arrivals" products={newArrivals} user={user}/>
-      
+      <CategorySection title="Top Deals" products={topDeals} user={user} />
+      <CategorySection title="Best Sellers" products={bestSellers} user={user} />
+      <CategorySection title="New Arrivals" products={newArrivals} user={user} />
 
       <Footer />
     </div>
