@@ -1,13 +1,22 @@
-// src/components/Footer.js
+
+import { Link } from "react-router-dom";
+
+
+
 export default function Footer() {
   return (
     <footer className="bg-gray-900 text-gray-200 mt-10">
       <div className="max-w-7xl mx-auto px-6 py-10 grid grid-cols-1 md:grid-cols-4 gap-8">
         {/* Column 1 */}
         <div>
-          <h3 className="text-lg font-bold mb-4">About Us</h3>
+          <h3 className="text-lg font-bold mb-4">About</h3>
           <ul className="space-y-2">
             <li><a href="#" className="hover:text-white transition-colors">Company Info</a></li>
+             <li>
+              <Link to="/about-us" className="hover:text-white transition-colors" style={{ textDecoration: "none", color: "white" }}>
+                About Us
+              </Link>
+            </li>
             <li><a href="#" className="hover:text-white transition-colors">Careers</a></li>
             <li><a href="#" className="hover:text-white transition-colors">Blog</a></li>
             <li><a href="#" className="hover:text-white transition-colors">Press</a></li>
@@ -18,7 +27,12 @@ export default function Footer() {
         <div>
           <h3 className="text-lg font-bold mb-4">Customer Service</h3>
           <ul className="space-y-2">
-            <li><a href="#" className="hover:text-white transition-colors">Help Center</a></li>
+            <li>
+              <Link to="/help-center" className="hover:text-white transition-colors" style={{ textDecoration: "none", color: "white" }}>
+                Help Center
+              </Link>
+            </li>
+
             <li><a href="#" className="hover:text-white transition-colors">Returns</a></li>
             <li><a href="#" className="hover:text-white transition-colors">Shipping</a></li>
             <li><a href="#" className="hover:text-white transition-colors">Contact Us</a></li>

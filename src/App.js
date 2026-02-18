@@ -20,6 +20,9 @@ import Header from "./components/Header";
 import CategoryPage from "./pages/CategoryPage";
 import ProductListingPage from "./pages/ProductListingPage";
 import Profile from "./pages/Profile";
+import HelpCenter from "./pages/HelpCenter";
+import AboutUs from "./pages/AboutUs";
+
 
 
 
@@ -74,7 +77,8 @@ function App() {
           <Route path="/:mainCategory" element={<ProductListingPage user={user} />} />
           <Route path="/:mainCategory/:subCategory" element={<ProductListingPage user={user} />} />
           <Route path="/:mainCategory/:subCategory/:childCategory" element={<ProductListingPage user={user} />} />
-
+          <Route path="/help-center" element={<HelpCenter />} />
+          <Route path="/about-us" element={<AboutUs />} />
           <Route path="/profile" element={<Profile user={user} />} />
 
         </Routes>
