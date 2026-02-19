@@ -38,6 +38,7 @@ export default function CategorySection({ title, products, user }) {
               id={product.id}
               title={product.title}
               price={product.price}
+              discount={product.discount}
               image={product.image}
               brand={product.brand}
               user={user}

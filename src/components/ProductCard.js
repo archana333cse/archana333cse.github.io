@@ -3,7 +3,7 @@ import { Heart } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-export default function ProductCard({ id, title, price, image, user }) {
+export default function ProductCard({ id, title, price, discount = 0, image, user }) {
   const [wishlisted, setWishlisted] = useState(false);
   const navigate = useNavigate();
 
@@ -32,7 +32,13 @@ export default function ProductCard({ id, title, price, image, user }) {
     let wishlist = JSON.parse(localStorage.getItem(wishlistKey)) || [];
 
     if (!wishlisted) {
-      wishlist.push({ id, title, price, image });
+      wishlist.push({
+        id,
+        title,
+        price,          // original price
+        discount,       // store discount %
+        image
+      });
       setWishlisted(true);
       alert("Item added to wishlist.");
     } else {
@@ -44,31 +50,40 @@ export default function ProductCard({ id, title, price, image, user }) {
   };
 
   const handleBuyNow = (e) => {
-  e.stopPropagation();
+    e.stopPropagation();
 
-  if (!user) {
-    alert("Please login to continue.");
-    navigate("/login");
-    return;
-  }
+    if (!user) {
+      alert("Please login to continue.");
+      navigate("/login");
+      return;
+    }
 
-  const cartKey = `cart_${user.email}`;
-  let cart = JSON.parse(localStorage.getItem(cartKey)) || [];
+    const cartKey = `cart_${user.email}`;
+    let cart = JSON.parse(localStorage.getItem(cartKey)) || [];
 
-  // If item already exists, increase quantity
-  const existingItem = cart.find((item) => item.id === id);
+    // If item already exists, increase quantity
+    const existingItem = cart.find((item) => item.id === id);
 
-  if (existingItem) {
-    existingItem.quantity += 1;
-  } else {
-    cart.push({ id, title, price, image, quantity: 1 });
-  }
+    if (existingItem) {
+      existingItem.quantity += 1;
+    } else {
+      cart.push({
+        id,
+        title,
+        price,
+        discount,
+        image,
+        discount,
+        quantity: 1
+      });
 
-  localStorage.setItem(cartKey, JSON.stringify(cart));
+    }
 
-  // ✅ Redirect to cart page
-  navigate("/cart");
-};
+    localStorage.setItem(cartKey, JSON.stringify(cart));
+
+    // ✅ Redirect to cart page
+    navigate("/cart");
+  };
 
 
   // ✅ Add to Cart
@@ -86,7 +101,16 @@ export default function ProductCard({ id, title, price, image, user }) {
     let cart = JSON.parse(localStorage.getItem(cartKey)) || [];
 
     if (!cart.some((item) => item.id === id)) {
-      cart.push({ id, title, price, image, quantity: 1 });
+      cart.push({
+        id,
+        title,
+        price,
+        discount,
+        image,
+        discount,
+        quantity: 1
+      });
+
       localStorage.setItem(cartKey, JSON.stringify(cart));
       alert("Item added to cart 🛒");
     } else {
@@ -98,6 +122,11 @@ export default function ProductCard({ id, title, price, image, user }) {
   const handleCardClick = () => {
     navigate(`/product/${id}`, { state: { id, title, price, image } });
   };
+  const discountedPrice =
+    discount > 0
+      ? price - (price * discount) / 100
+      : price;
+      
 
   return (
     <div
@@ -108,8 +137,9 @@ export default function ProductCard({ id, title, price, image, user }) {
       {/* Wishlist Icon */}
       <button
         onClick={toggleWishlist}
-        className="absolute top-3 right-3 text-gray-500 hover:text-red-500"
+        className="absolute top-3 right-3 z-20 text-gray-500 hover:text-red-500"
       >
+
         <Heart
           size={22}
           fill={wishlisted ? "red" : "none"}
@@ -117,12 +147,39 @@ export default function ProductCard({ id, title, price, image, user }) {
         />
       </button>
 
-      <div className="w-full h-40 flex items-center justify-center bg-gray-100 rounded mb-2">
+      <div className="w-full h-40 flex items-center justify-center bg-gray-100 rounded mb-2 relative">
+        {discount > 0 && (
+          <div className="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded z-10">
+
+            {discount}% OFF
+          </div>
+        )}
+
         <img src={image} alt={title} className="max-h-full max-w-full object-contain" />
       </div>
 
       <h2 className="mt-2 font-semibold truncate">{title}</h2>
-      <p className="text-gray-600">₹{price}</p>
+      <div className="mt-1">
+        {discount > 0 ? (
+          <div className="flex items-center gap-2">
+            <span className="text-gray-400 line-through text-sm">
+              ₹{price}
+            </span>
+
+            <span className="text-black font-semibold">
+              ₹{discountedPrice.toFixed(0)}
+            </span>
+
+            <span className="text-green-600 text-sm font-semibold">
+              {discount}% OFF
+            </span>
+          </div>
+        ) : (
+          <span className="text-gray-700 font-semibold">
+            ₹{price}
+          </span>
+        )}
+      </div>
 
       {/* Buttons */}
       <div className="flex gap-2 mt-2">
