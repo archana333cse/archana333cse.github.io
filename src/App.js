@@ -1,4 +1,3 @@
-
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { useEffect, useState } from "react";
 
@@ -17,24 +16,18 @@ import Orders from "./pages/Orders";
 import SearchResults from "./pages/SearchResults";
 import CheckoutSuccess from "./pages/CheckoutSuccess";
 import Header from "./components/Header";
+import Footer from "./components/Footer";
 import CategoryPage from "./pages/CategoryPage";
 import ProductListingPage from "./pages/ProductListingPage";
 import Profile from "./pages/Profile";
 import HelpCenter from "./pages/HelpCenter";
 import AboutUs from "./pages/AboutUs";
 
-
-
-
 function App() {
-  // ✅ Define state
-  const [user, setUser] = useState(() => {
-    const storedUser = localStorage.getItem("user");
-    return storedUser ? JSON.parse(storedUser) : null;
-  });
 
+  const [user, setUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true); // ✅ NEW
 
-  // ✅ Hook must be inside the component
   useEffect(() => {
     fetch("http://localhost:5000/me", {
       credentials: "include",
@@ -46,20 +39,24 @@ function App() {
         } else {
           setUser(null);
         }
+        setAuthLoading(false); // ✅ stop loading
       })
-      .catch(() => setUser(null));
+      .catch(() => {
+        setUser(null);
+        setAuthLoading(false); // ✅ stop loading
+      });
   }, []);
 
+  // ✅ IMPORTANT: wait until auth check completes
+  if (authLoading) {
+    return <div className="text-center mt-20 text-xl">Loading...</div>;
+  }
 
   return (
     <Router>
       <Header user={user} setUser={setUser} />
       <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
         <Routes>
-          <Route
-            path="/category/:categoryName"
-            element={<CategoryPage user={user} />}
-          />
           <Route path="/" element={<Home user={user} />} />
           <Route path="/login" element={<Login setUser={setUser} />} />
           <Route path="/signup" element={<Signup />} />
@@ -74,15 +71,16 @@ function App() {
           <Route path="/orders" element={<Orders user={user} />} />
           <Route path="/search" element={<SearchResults />} />
           <Route path="/checkout/success" element={<CheckoutSuccess />} />
+          <Route path="/category/:categoryName" element={<CategoryPage user={user} />} />
           <Route path="/:mainCategory" element={<ProductListingPage user={user} />} />
           <Route path="/:mainCategory/:subCategory" element={<ProductListingPage user={user} />} />
           <Route path="/:mainCategory/:subCategory/:childCategory" element={<ProductListingPage user={user} />} />
           <Route path="/help-center" element={<HelpCenter />} />
           <Route path="/about-us" element={<AboutUs />} />
           <Route path="/profile" element={<Profile user={user} />} />
-
         </Routes>
       </div>
+      <Footer />
     </Router>
   );
 }

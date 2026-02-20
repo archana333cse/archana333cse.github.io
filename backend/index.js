@@ -322,6 +322,226 @@ app.get("/orders", authenticate, (req, res) => {
   });
 });
 
+// ================= ADD TO WISHLIST =================
+app.post("/wishlist", authenticate, (req, res) => {
+  const user_id = req.user.id;
+  const { product_id } = req.body;
+
+  if (!product_id) {
+    return res.status(400).json({ message: "Product ID required" });
+  }
+
+  const sql = "INSERT INTO wishlist (user_id, product_id) VALUES (?, ?)";
+
+  db.query(sql, [user_id, product_id], (err) => {
+    if (err) {
+      if (err.code === "ER_DUP_ENTRY") {
+        return res.status(409).json({ message: "Already in wishlist" });
+      }
+      return res.status(500).json({ message: "Database error" });
+    }
+
+    res.json({ message: "Added to wishlist" });
+  });
+});
+
+// ================= GET USER WISHLIST =================
+app.get("/wishlist", authenticate, (req, res) => {
+  const user_id = req.user.id;
+
+  const sql = `
+    SELECT p.*
+    FROM wishlist w
+    JOIN products p ON w.product_id = p.id
+    WHERE w.user_id = ?
+  `;
+
+  db.query(sql, [user_id], (err, results) => {
+    if (err) return res.status(500).json({ message: "Database error" });
+
+    res.json(results);
+  });
+});
+// ================= REMOVE FROM WISHLIST =================
+app.delete("/wishlist/:product_id", authenticate, (req, res) => {
+  const user_id = req.user.id;
+  const { product_id } = req.params;
+
+  const sql = "DELETE FROM wishlist WHERE user_id = ? AND product_id = ?";
+
+  db.query(sql, [user_id, product_id], (err) => {
+    if (err) return res.status(500).json({ message: "Database error" });
+
+    res.json({ message: "Removed from wishlist" });
+  });
+});
+
+// ================= GET CART =================
+app.get("/cart", authenticate, (req, res) => {
+  const user_email = req.user.email;
+
+  const sql = `
+    SELECT p.*, c.quantity 
+    FROM cart c
+    JOIN products p ON c.product_id = p.id
+    WHERE c.user_email = ?
+  `;
+
+  db.query(sql, [user_email], (err, results) => {
+    if (err) return res.status(500).json({ message: "Database error" });
+    res.json(results);
+  });
+});
+
+// ================= ADD TO CART =================
+app.post("/cart", authenticate, (req, res) => {
+  const user_email = req.user.email;
+  const { product_id } = req.body;
+
+  const checkSql =
+    "SELECT * FROM cart WHERE user_email = ? AND product_id = ?";
+
+  db.query(checkSql, [user_email, product_id], (err, results) => {
+    if (results.length > 0) {
+      const updateSql =
+        "UPDATE cart SET quantity = quantity + 1 WHERE user_email = ? AND product_id = ?";
+      db.query(updateSql, [user_email, product_id], () => {
+        res.json({ message: "Quantity updated" });
+      });
+    } else {
+      const insertSql =
+        "INSERT INTO cart (user_email, product_id, quantity) VALUES (?, ?, 1)";
+      db.query(insertSql, [user_email, product_id], () => {
+        res.json({ message: "Added to cart" });
+      });
+    }
+  });
+});
+
+// ================= UPDATE CART QUANTITY =================
+app.put("/cart/:id", authenticate, (req, res) => {
+  const user_email = req.user.email;
+  const product_id = req.params.id;
+  const { quantity } = req.body;
+
+  const sql =
+    "UPDATE cart SET quantity = ? WHERE user_email = ? AND product_id = ?";
+
+  db.query(sql, [quantity, user_email, product_id], (err) => {
+    if (err) return res.status(500).json({ message: "Database error" });
+    res.json({ message: "Cart updated" });
+  });
+});
+
+// ================= REMOVE FROM CART =================
+app.delete("/cart/:id", authenticate, (req, res) => {
+  const user_email = req.user.email;
+  const product_id = req.params.id;
+
+  const sql =
+    "DELETE FROM cart WHERE user_email = ? AND product_id = ?";
+
+  db.query(sql, [user_email, product_id], (err) => {
+    if (err) return res.status(500).json({ message: "Database error" });
+    res.json({ message: "Removed from cart" });
+  });
+});
+
+//=================save for later=================
+
+app.post("/cart/save-for-later/:id", authenticate, (req, res) => {
+  const userEmail = req.user.email;
+  const productId = req.params.id;
+
+  db.query(
+    "SELECT * FROM cart WHERE user_email = ? AND product_id = ?",
+    [userEmail, productId],
+    (err, cartItems) => {
+      if (err) return res.status(500).json({ message: "Server error" });
+
+      if (cartItems.length === 0) {
+        return res.status(404).json({ message: "Item not found in cart" });
+      }
+
+      const quantity = cartItems[0].quantity;
+
+      db.query(
+        "INSERT INTO saved_for_later (user_email, product_id, quantity) VALUES (?, ?, ?)",
+        [userEmail, productId, quantity],
+        (err) => {
+          if (err) return res.status(500).json({ message: "Server error" });
+
+          db.query(
+            "DELETE FROM cart WHERE user_email = ? AND product_id = ?",
+            [userEmail, productId],
+            (err) => {
+              if (err) return res.status(500).json({ message: "Server error" });
+
+              res.json({ message: "Moved to saved for later" });
+            }
+          );
+        }
+      );
+    }
+  );
+});
+//===================== Move back to cart from saved for later =================
+app.post("/saved-to-cart/:id", authenticate, (req, res) => {
+  const userEmail = req.user.email;
+  const productId = req.params.id;
+
+  db.query(
+    "SELECT * FROM saved_for_later WHERE user_email = ? AND product_id = ?",
+    [userEmail, productId],
+    (err, savedItems) => {
+      if (err) return res.status(500).json({ message: "Server error" });
+
+      if (savedItems.length === 0) {
+        return res.status(404).json({ message: "Item not found" });
+      }
+
+      const quantity = savedItems[0].quantity;
+
+      db.query(
+        "INSERT INTO cart (user_email, product_id, quantity) VALUES (?, ?, ?)",
+        [userEmail, productId, quantity],
+        (err) => {
+          if (err) return res.status(500).json({ message: "Server error" });
+
+          db.query(
+            "DELETE FROM saved_for_later WHERE user_email = ? AND product_id = ?",
+            [userEmail, productId],
+            (err) => {
+              if (err) return res.status(500).json({ message: "Server error" });
+
+              res.json({ message: "Moved back to cart" });
+            }
+          );
+        }
+      );
+    }
+  );
+});
+//===================== Get saved for later items =================
+app.get("/saved-for-later", authenticate, (req, res) => {
+  const userEmail = req.user.email;
+
+  const query = `
+    SELECT s.product_id as id, p.title, p.price, p.discount, p.image, s.quantity
+    FROM saved_for_later s
+    JOIN products p ON s.product_id = p.id
+    WHERE s.user_email = ?
+  `;
+
+  db.query(query, [userEmail], (err, results) => {
+    if (err) {
+      console.error("Saved For Later Error:", err);
+      return res.status(500).json({ message: "Server error" });
+    }
+
+    res.json(results);
+  });
+});
 
 // ================= START SERVER =================
 const PORT = 5000;

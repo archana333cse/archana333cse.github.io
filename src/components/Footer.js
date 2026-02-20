@@ -11,7 +11,7 @@ export default function Footer() {
         <div>
           <h3 className="text-lg font-bold mb-4">About</h3>
           <ul className="space-y-2">
-            <li><a href="#" className="hover:text-white transition-colors">Company Info</a></li>
+          {/*   <li><a href="#" className="hover:text-white transition-colors">Company Info</a></li> */}
              <li>
               <Link to="/about-us" className="hover:text-white transition-colors" style={{ textDecoration: "none", color: "white" }}>
                 About Us

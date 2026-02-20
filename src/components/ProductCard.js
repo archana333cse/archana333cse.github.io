@@ -2,25 +2,37 @@
 import { Heart } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
-export default function ProductCard({ id, title, price, discount = 0, image, user }) {
+export default function ProductCard({
+  id,
+  title,
+  price,
+  discount = 0,
+  image,
+  user
+}) {
   const [wishlisted, setWishlisted] = useState(false);
   const navigate = useNavigate();
 
-  // Check if product is already in wishlist
+  // ✅ Check wishlist from DB
   useEffect(() => {
-    //const user = JSON.parse(localStorage.getItem("user"));
-    if (user) {
-      const wishlistKey = `wishlist_${user.email}`;
-      const wishlist = JSON.parse(localStorage.getItem(wishlistKey)) || [];
-      setWishlisted(wishlist.some((item) => item.id === id));
-    }
-  }, [id]);
+    if (!user) return;
 
-  // ✅ Wishlist toggle
-  const toggleWishlist = (e) => {
+    axios
+      .get("http://localhost:5000/wishlist", {
+        withCredentials: true
+      })
+      .then((res) => {
+        const exists = res.data.some((item) => item.id === id);
+        setWishlisted(exists);
+      })
+      .catch((err) => console.error(err));
+  }, [id, user]);
+
+  // ✅ Toggle Wishlist
+  const toggleWishlist = async (e) => {
     e.stopPropagation();
-    //const user = JSON.parse(localStorage.getItem("user"));
 
     if (!user) {
       alert("Please login to use wishlist.");
@@ -28,28 +40,52 @@ export default function ProductCard({ id, title, price, discount = 0, image, use
       return;
     }
 
-    const wishlistKey = `wishlist_${user.email}`;
-    let wishlist = JSON.parse(localStorage.getItem(wishlistKey)) || [];
-
-    if (!wishlisted) {
-      wishlist.push({
-        id,
-        title,
-        price,          // original price
-        discount,       // store discount %
-        image
-      });
-      setWishlisted(true);
-      alert("Item added to wishlist.");
-    } else {
-      wishlist = wishlist.filter((item) => item.id !== id);
-      setWishlisted(false);
+    try {
+      if (!wishlisted) {
+        await axios.post(
+          "http://localhost:5000/wishlist",
+          { product_id: id },
+          { withCredentials: true }
+        );
+        setWishlisted(true);
+        alert("Added to wishlist ❤️");
+      } else {
+        await axios.delete(
+          `http://localhost:5000/wishlist/${id}`,
+          { withCredentials: true }
+        );
+        setWishlisted(false);
+      }
+    } catch (err) {
+      console.error(err);
     }
-
-    localStorage.setItem(wishlistKey, JSON.stringify(wishlist));
   };
 
-  const handleBuyNow = (e) => {
+  // ✅ Add to Cart (DB Version)
+  const handleAddToCart = async (e) => {
+    e.stopPropagation();
+
+    if (!user) {
+      alert("Please login to add items to cart.");
+      navigate("/login");
+      return;
+    }
+
+    try {
+      const res = await axios.post(
+        "http://localhost:5000/cart",
+        { product_id: id },
+        { withCredentials: true }
+      );
+
+      alert("Item added to cart 🛒");
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+    }
+  };
+
+  // ✅ Buy Now (also DB based)
+  const handleBuyNow = async (e) => {
     e.stopPropagation();
 
     if (!user) {
@@ -58,88 +94,40 @@ export default function ProductCard({ id, title, price, discount = 0, image, use
       return;
     }
 
-    const cartKey = `cart_${user.email}`;
-    let cart = JSON.parse(localStorage.getItem(cartKey)) || [];
+    try {
+      await axios.post(
+        "http://localhost:5000/cart",
+        { product_id: id },
+        { withCredentials: true }
+      );
 
-    // If item already exists, increase quantity
-    const existingItem = cart.find((item) => item.id === id);
-
-    if (existingItem) {
-      existingItem.quantity += 1;
-    } else {
-      cart.push({
-        id,
-        title,
-        price,
-        discount,
-        image,
-        discount,
-        quantity: 1
-      });
-
-    }
-
-    localStorage.setItem(cartKey, JSON.stringify(cart));
-
-    // ✅ Redirect to cart page
-    navigate("/cart");
-  };
-
-
-  // ✅ Add to Cart
-  const handleAddToCart = (e) => {
-    e.stopPropagation();
-    //const user = JSON.parse(localStorage.getItem("user"));
-
-    if (!user) {
-      alert("Please login to add items to cart.");
-      navigate("/login");
-      return;
-    }
-
-    const cartKey = `cart_${user.email}`;
-    let cart = JSON.parse(localStorage.getItem(cartKey)) || [];
-
-    if (!cart.some((item) => item.id === id)) {
-      cart.push({
-        id,
-        title,
-        price,
-        discount,
-        image,
-        discount,
-        quantity: 1
-      });
-
-      localStorage.setItem(cartKey, JSON.stringify(cart));
-      alert("Item added to cart 🛒");
-    } else {
-      alert("Item already in cart.");
+      navigate("/cart"); // redirect after adding
+    } catch (error) {
+      console.error("Error:", error);
     }
   };
 
-  // Navigate to product detail
   const handleCardClick = () => {
-    navigate(`/product/${id}`, { state: { id, title, price, image } });
+    navigate(`/product/${id}`, {
+      state: { id, title, price, image }
+    });
   };
+
   const discountedPrice =
     discount > 0
       ? price - (price * discount) / 100
       : price;
-      
 
   return (
     <div
       onClick={handleCardClick}
       className="bg-white shadow rounded-lg p-4 w-full cursor-pointer relative hover:shadow-lg transition"
     >
-
       {/* Wishlist Icon */}
       <button
         onClick={toggleWishlist}
         className="absolute top-3 right-3 z-20 text-gray-500 hover:text-red-500"
       >
-
         <Heart
           size={22}
           fill={wishlisted ? "red" : "none"}
@@ -147,18 +135,25 @@ export default function ProductCard({ id, title, price, discount = 0, image, use
         />
       </button>
 
+      {/* Image Section */}
       <div className="w-full h-40 flex items-center justify-center bg-gray-100 rounded mb-2 relative">
         {discount > 0 && (
           <div className="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded z-10">
-
             {discount}% OFF
           </div>
         )}
 
-        <img src={image} alt={title} className="max-h-full max-w-full object-contain" />
+        <img
+          src={image}
+          alt={title}
+          className="max-h-full max-w-full object-contain"
+        />
       </div>
 
+      {/* Title */}
       <h2 className="mt-2 font-semibold truncate">{title}</h2>
+
+      {/* Price */}
       <div className="mt-1">
         {discount > 0 ? (
           <div className="flex items-center gap-2">

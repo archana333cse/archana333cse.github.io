@@ -63,7 +63,7 @@ export default function Home({ user }) {
       <CategorySection title="Best Sellers" products={bestSellers} user={user} />
       <CategorySection title="New Arrivals" products={newArrivals} user={user} />
 
-      <Footer />
+     {/*  <Footer /> */}
     </div>
   );
 }
