@@ -276,30 +276,47 @@ app.get('/search', (req, res) => {
 
 
 // ================= PLACE ORDER =================
-app.post("/orders", (req, res) => {
-  const { items, total_price, address, payment_method, email } = req.body;
+app.post("/orders", authenticate, (req, res) => {
+  const { items, total_price, payment_method, address_id } = req.body;
+  const user_email = req.user.email;
 
-  // Determine if user is logged in
-  const user_email = req.user ? req.user.email : email;
-
-  if (!items || !total_price || !address || !payment_method || !user_email) {
+  if (!items || !total_price || !payment_method || !address_id) {
     return res.status(400).json({ message: "Missing order data" });
   }
 
-  const sql = `INSERT INTO userorder 
-               (user_email, items, total_price, address, payment_method)
-               VALUES (?, ?, ?, ?, ?)`;
-
+  // 🔥 STEP 1: Fetch address from DB
   db.query(
-    sql,
-    [user_email, JSON.stringify(items), total_price, address, payment_method],
-    (err) => {
-      if (err) {
-        console.error("Error placing order:", err);
-        return res.status(500).json({ message: "Database error placing order" });
+    "SELECT * FROM addresses WHERE id = ? AND user_id = ?",
+  [address_id, req.user.id],
+    (err, results) => {
+      if (err) return res.status(500).json(err);
+
+      if (results.length === 0) {
+        return res.status(404).json({ message: "Address not found" });
       }
 
-      res.json({ message: "Order placed successfully" });
+      const addr = results[0];
+
+      // 🔥 STEP 2: Convert to string (same as your table)
+      const fullAddress = `${addr.name}, ${addr.phone}, ${addr.address_line}, ${addr.city}, ${addr.state} - ${addr.pincode}`;
+
+      // 🔥 STEP 3: Save order
+      db.query(
+        `INSERT INTO userorder (user_email, items, total_price, address, payment_method)
+         VALUES (?, ?, ?, ?, ?)`,
+        [
+          user_email,
+          JSON.stringify(items),
+          total_price,
+          fullAddress,
+          payment_method
+        ],
+        (err) => {
+          if (err) return res.status(500).json(err);
+
+          res.json({ message: "Order placed successfully" });
+        }
+      );
     }
   );
 });
@@ -312,6 +329,7 @@ app.get("/orders", authenticate, (req, res) => {
 
   db.query("SELECT * FROM userorder WHERE user_email = ?", [user_email], (err, results) => {
     if (err) return res.status(500).json({ message: "Failed to fetch orders" });
+    
 
     const parsedOrders = results.map(order => ({
       ...order,
@@ -541,6 +559,80 @@ app.get("/saved-for-later", authenticate, (req, res) => {
 
     res.json(results);
   });
+});
+
+
+
+app.get("/addresses", authenticate, (req, res) => {
+  const userId = req.user.id;
+
+  db.query(
+    "SELECT * FROM addresses WHERE user_id = ? ORDER BY created_at DESC",
+    [userId],
+    (err, results) => {
+      if (err) return res.status(500).json(err);
+      res.json(results);
+    }
+  );
+});
+
+app.post("/addresses", authenticate, (req, res) => {
+  const userId = req.user.id;
+  const { name, phone, pincode, addressLine, city, state } = req.body;
+
+  if (!name || !phone || !pincode || !addressLine || !city || !state) {
+    return res.status(400).json({ message: "All fields are required" });
+  }
+
+  db.query(
+    "INSERT INTO addresses (user_id, name, phone, pincode, address_line, city, state) VALUES (?, ?, ?, ?, ?, ?, ?)",
+    [userId, name, phone, pincode, addressLine, city, state],
+    (err) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).json({ message: "Database error" });
+      }
+
+      res.json({ message: "Address added successfully" });
+    }
+  );
+});
+
+
+
+app.put("/addresses/:id", authenticate, async (req, res) => {
+  const { id } = req.params;
+  const { name, phone, pincode, addressLine, city, state } = req.body;
+
+  db.query(
+    "UPDATE addresses SET name=?, phone=?, pincode=?, address_line=?, city=?, state=? WHERE id=?",
+    [name, phone, pincode, addressLine, city, state, id]
+  );
+
+  res.json({ message: "Updated" });
+});
+
+app.delete("/addresses/:id", authenticate, async (req, res) => {
+  const { id } = req.params;
+
+  db.query("DELETE FROM addresses WHERE id = ?", [id]);
+
+  res.json({ message: "Deleted" });
+});
+
+
+app.get("/addresses/:id", authenticate, (req, res) => {
+  const { id } = req.params;
+
+  db.query(
+    "SELECT * FROM addresses WHERE id = ? AND user_id = ?",
+    [id, req.user.id],
+
+    (err, results) => {
+      if (err) return res.status(500).json(err);
+      res.json(results[0]);
+    }
+  );
 });
 
 // ================= START SERVER =================
